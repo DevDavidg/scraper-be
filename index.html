@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualización en Vivo</title>
+    <style>
+        .property {
+            border: 1px solid #ccc;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Propiedades en Vivo</h1>
+    <div id="data-container">
+        <!-- Los datos se cargarán aquí -->
+    </div>
+
+    <script>
+        const ws = new WebSocket("ws://127.0.0.1:8000/api/ws");
+
+        ws.onopen = () => {
+            console.log("WebSocket conectado");
+        };
+
+        ws.onmessage = (event) => {
+            const dataContainer = document.getElementById("data-container");
+            const message = JSON.parse(event.data);
+
+            // Si recibimos un mensaje de eliminación
+            if (message.message === "Todos los datos han sido eliminados") {
+                dataContainer.innerHTML = "<p>Todos los datos han sido eliminados.</p>";
+                return;
+            }
+
+            // Agregar nuevos datos
+            const div = document.createElement("div");
+            div.className = "property";
+            div.innerHTML = `
+                <h3>${message.titleTypeSupProperty || "Sin título"}</h3>
+                <p>Precio: ${message.price || "N/A"}</p>
+                <p>Ubicación: ${message.location || "N/A"}</p>
+                <p>Expensas: ${message.expenses || "N/A"}</p>
+            `;
+            dataContainer.prepend(div);
+        };
+
+        ws.onclose = () => {
+            console.log("WebSocket desconectado");
+        };
+
+        ws.onerror = (error) => {
+            console.error("Error en el WebSocket:", error);
+        };
+    </script>
+
+</body>
+
+</html>
