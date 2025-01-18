@@ -27,7 +27,7 @@ async def create_task(data: dict):
 
 @router.get("/data")
 async def get_data():
-    data = list(scraped_data_collection.find({}, {"_id": 0}))  # Excluir _id
+    data = list(scraped_data_collection.find({}, {"_id": 0})) 
     return {"data": data}
 
 @router.delete("/data")
