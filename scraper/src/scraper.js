@@ -6,6 +6,7 @@ import pLimit from "p-limit";
 import { fileURLToPath } from "url";
 import WebSocket from "ws";
 import { addExtra } from "puppeteer-extra";
+import puppeteerCore from "puppeteer-core";
 
 const puppeteerExtra = addExtra(puppeteerCore);
 puppeteerExtra.use(StealthPlugin());
