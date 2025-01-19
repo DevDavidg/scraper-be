@@ -6,6 +6,9 @@ from bson import ObjectId
 router = APIRouter()
 clients = []  
 
+@router.get("/")
+async def root():
+    return {"message": "¡API funcionando correctamente!"}
 
 @router.post("/tasks")
 async def create_task(data: dict):
