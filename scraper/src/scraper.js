@@ -1,12 +1,14 @@
 import axios from "axios";
-import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import fs from "fs";
 import path, { dirname } from "path";
 import pLimit from "p-limit";
 import { fileURLToPath } from "url";
 import WebSocket from "ws";
+import vanillaPuppeteer from "puppeteer";
+import { addExtra } from "puppeteer-extra";
 
+const puppeteer = addExtra(vanillaPuppeteer);
 puppeteer.use(StealthPlugin());
 
 import http from "http";
