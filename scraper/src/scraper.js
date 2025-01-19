@@ -110,6 +110,8 @@ const autoScroll = async (page) => {
 (async () => {
   const browser = await puppeteer.launch({
     headless: "new",
+    executablePath:
+      "/opt/render/project/src/scraper/chrome/linux-134.0.6964.0/chrome-linux64/chrome",
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
