@@ -5,7 +5,7 @@ import path, { dirname } from "path";
 import pLimit from "p-limit";
 import { fileURLToPath } from "url";
 import WebSocket from "ws";
-import vanillaPuppeteer from "puppeteer";
+import vanillaPuppeteer, { executablePath } from "puppeteer";
 import { addExtra } from "puppeteer-extra";
 
 const puppeteer = addExtra(vanillaPuppeteer);
@@ -112,6 +112,7 @@ const autoScroll = async (page) => {
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath: executablePath(),
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
