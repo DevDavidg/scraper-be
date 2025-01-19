@@ -9,6 +9,19 @@ import WebSocket from "ws";
 
 puppeteer.use(StealthPlugin());
 
+import http from "http";
+
+const port = process.env.PORT || 3000;
+
+http
+  .createServer((_, res) => {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Scraper service running...");
+  })
+  .listen(port, () => {
+    console.log(`Scraper service listening on port ${port}`);
+  });
+
 const connectWebSocket = () => {
   const ws = new WebSocket("ws:scraper-backend-pvvo.onrender.com/api/ws");
 
@@ -95,7 +108,8 @@ const autoScroll = async (page) => {
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ["--start-maximized"],
+    executablePath: "/usr/bin/google-chrome",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
     defaultViewport: null,
   });
 
