@@ -1,11 +1,11 @@
 import axios from "axios";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import fs from "fs";
-import path, { dirname, join } from "path";
+import path, { dirname } from "path";
 import pLimit from "p-limit";
 import { fileURLToPath } from "url";
 import WebSocket from "ws";
-import vanillaPuppeteer, { executablePath } from "puppeteer";
+import vanillaPuppeteer from "puppeteer";
 import { addExtra } from "puppeteer-extra";
 
 const puppeteer = addExtra(vanillaPuppeteer);
@@ -48,9 +48,6 @@ const ws = connectWebSocket();
 let addedCount = 0;
 let removedCount = 0;
 let existingCount = 0;
-
-const pathToChromium = executablePath();
-console.log("Local Chromium path:", pathToChromium);
 
 const removeDuplicates = (data) => {
   const uniqueDataMap = new Map();
@@ -113,17 +110,6 @@ const autoScroll = async (page) => {
 (async () => {
   const browser = await puppeteer.launch({
     headless: "new",
-    executablePath: path.join(
-      process.cwd(),
-      "node_modules",
-      ".cache",
-      "@puppeteer",
-      "browsers",
-      "chrome",
-      "linux64-123456",
-      "chrome-linux64",
-      "chrome"
-    ),
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
