@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: scraper-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    envVars:
+      - key: PORT
+        value: 8000
+    plan: free
+    region: virginia
+
+  - type: worker
+    name: scraper-worker
+    runtime: node
+    buildCommand: npm install
+    startCommand: node src/scraper.js
+    plan: free
+    region: virginia
