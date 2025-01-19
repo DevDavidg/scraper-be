@@ -5,11 +5,10 @@ import path, { dirname } from "path";
 import pLimit from "p-limit";
 import { fileURLToPath } from "url";
 import WebSocket from "ws";
-import vanillaPuppeteer from "puppeteer";
 import { addExtra } from "puppeteer-extra";
 
-const puppeteer = addExtra(vanillaPuppeteer);
-puppeteer.use(StealthPlugin());
+const puppeteerExtra = addExtra(puppeteerCore);
+puppeteerExtra.use(StealthPlugin());
 
 import http from "http";
 
