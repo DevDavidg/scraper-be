@@ -14,7 +14,7 @@ services:
     name: scraper-worker
     runtime: node
     rootDir: scraper
-    buildCommand: npm install
+    buildCommand: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false npm install
     startCommand: node src/scraper.js
     envVars:
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD

@@ -15,8 +15,6 @@ import http from "http";
 
 const port = process.env.PORT || 3000;
 
-console.log(`Using Puppeteer executable: ${puppeteer.executablePath()}`);
-
 http
   .createServer((_, res) => {
     res.writeHead(200, { "Content-Type": "text/plain" });
@@ -50,6 +48,9 @@ const ws = connectWebSocket();
 let addedCount = 0;
 let removedCount = 0;
 let existingCount = 0;
+
+const pathToChromium = executablePath();
+console.log("Local Chromium path:", pathToChromium);
 
 const removeDuplicates = (data) => {
   const uniqueDataMap = new Map();
@@ -111,8 +112,9 @@ const autoScroll = async (page) => {
 
 (async () => {
   const browser = await puppeteer.launch({
+    product: "chrome",
     headless: true,
-    executablePath: executablePath(),
+    executablePath: pathToChromium,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
