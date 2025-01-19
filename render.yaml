@@ -13,7 +13,8 @@ services:
   - type: web
     name: scraper-worker
     runtime: node
+    rootDir: scraper
     buildCommand: npm install
-    startCommand: node scraper/src/scraper.js
+    startCommand: node src/scraper.js
     plan: free
     region: virginia
