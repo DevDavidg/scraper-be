@@ -6,13 +6,13 @@ load_dotenv()
 
 uri = os.getenv("MONGO_URI")
 
-client = MongoClient(uri, tls=True) 
+client = MongoClient(uri)
 
 try:
     client.admin.command("ping")
     print("Pinged your deployment. You successfully connected to MongoDB!")
 except Exception as e:
-    print(f"Error connecting to MongoDB: {e}")
+    print(e)
 
-db = client["cluster_data"]
-scraped_data_collection = db["scraped_data"]
+db = client["cluster_data"]  
+scraped_data_collection = db["scraped_data"]  
