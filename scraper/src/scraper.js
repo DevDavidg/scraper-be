@@ -13,6 +13,8 @@ import http from "http";
 
 const port = process.env.PORT || 3000;
 
+console.log(`Using Puppeteer executable: ${puppeteer.executablePath()}`);
+
 http
   .createServer((_, res) => {
     res.writeHead(200, { "Content-Type": "text/plain" });
