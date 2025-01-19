@@ -10,7 +10,7 @@ import WebSocket from "ws";
 puppeteer.use(StealthPlugin());
 
 const connectWebSocket = () => {
-  const ws = new WebSocket("ws://127.0.0.1:8000/api/ws");
+  const ws = new WebSocket("ws:scraper-backend-pvvo.onrender.com/api/ws");
 
   ws.on("open", () => {
     console.log("Conexión WebSocket establecida con el servidor.");
@@ -46,7 +46,9 @@ const removeDuplicates = (data) => {
 
 const fetchCurrentAPIData = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/data");
+    const response = await axios.get(
+      "https://scraper-backend-pvvo.onrender.com/api/data"
+    );
     console.log("Datos obtenidos de la API:", response.data);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
@@ -57,7 +59,10 @@ const fetchCurrentAPIData = async () => {
 
 const sendDataToAPI = async (data) => {
   try {
-    const response = await axios.post("http://localhost:8000/api/tasks", data);
+    const response = await axios.post(
+      "https://scraper-backend-pvvo.onrender.com/api/tasks",
+      data
+    );
     console.log(`Datos enviados exitosamente: ${response.status}`);
   } catch (error) {
     console.error("Error enviando datos a la API:", error.message);
@@ -99,7 +104,6 @@ const autoScroll = async (page) => {
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const baseUrl = "https://www.zonaprop.com.ar";
-  const maxPages = 1;
   const allScrapedData = [];
   const currentAPIData = await fetchCurrentAPIData();
   const currentAPIHrefs = new Set(currentAPIData.map((item) => item.href));
@@ -345,7 +349,9 @@ const autoScroll = async (page) => {
 
   for (const data of obsoleteData) {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/data/${data.id}`);
+      await axios.delete(
+        `https://scraper-backend-pvvo.onrender.com/api/data/${data.id}`
+      );
       removedCount++;
       console.log(`Dato obsoleto eliminado: ${data.href}`);
     } catch (error) {

@@ -13,3 +13,6 @@ try:
     print("Pinged your deployment. You successfully connected to MongoDB!")
 except Exception as e:
     print(e)
+
+db = client["cluster_data"]  
+scraped_data_collection = db["scraped_data"]  
