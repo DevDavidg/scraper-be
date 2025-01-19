@@ -124,7 +124,7 @@ const autoScroll = async (page) => {
   const currentAPIHrefs = new Set(currentAPIData.map((item) => item.href));
   const scrapedHrefs = new Set();
 
-  const limit = pLimit(27);
+  const limit = pLimit(1);
 
   const outputPath = path.resolve(__dirname, "../../../scraped_data.json");
 
@@ -146,7 +146,9 @@ const autoScroll = async (page) => {
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
     const resourceType = request.resourceType();
-    if (["image", "stylesheet", "font", "script"].includes(resourceType)) {
+    if (
+      ["image", "stylesheet", "font", "script", "media"].includes(resourceType)
+    ) {
       request.abort();
     } else {
       request.continue();
@@ -289,10 +291,6 @@ const autoScroll = async (page) => {
           waitUntil: "networkidle2",
           timeout: 30000,
         });
-        const content = await listingPage.content();
-        console.log(content);
-        const bodyHTML = await listingPage.content();
-        console.log("HTML de la página:", bodyHTML.slice(0, 500));
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
         break;
