@@ -289,6 +289,10 @@ const autoScroll = async (page) => {
           waitUntil: "networkidle2",
           timeout: 30000,
         });
+        const content = await listingPage.content();
+        console.log(content);
+        const bodyHTML = await listingPage.content();
+        console.log("HTML de la página:", bodyHTML.slice(0, 500));
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
         break;
