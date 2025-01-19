@@ -14,7 +14,9 @@ services:
     name: scraper-worker
     runtime: node
     rootDir: scraper
-    buildCommand: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=false npm install
+    buildCommand: |
+      npm install
+      npx @puppeteer/browsers install chrome stable
     startCommand: node src/scraper.js
     envVars:
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD

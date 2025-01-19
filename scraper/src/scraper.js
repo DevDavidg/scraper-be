@@ -1,7 +1,7 @@
 import axios from "axios";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import fs from "fs";
-import path, { dirname } from "path";
+import path, { dirname, join } from "path";
 import pLimit from "p-limit";
 import { fileURLToPath } from "url";
 import WebSocket from "ws";
@@ -25,7 +25,7 @@ http
   });
 
 const connectWebSocket = () => {
-  const ws = new WebSocket("ws:scraper-backend-pvvo.onrender.com/api/ws");
+  const ws = new WebSocket("wss://scraper-backend-pvvo.onrender.com/api/ws");
 
   ws.on("open", () => {
     console.log("Conexión WebSocket establecida con el servidor.");
@@ -112,9 +112,18 @@ const autoScroll = async (page) => {
 
 (async () => {
   const browser = await puppeteer.launch({
-    product: "chrome",
-    headless: true,
-    executablePath: pathToChromium,
+    headless: "new",
+    executablePath: path.join(
+      process.cwd(),
+      "node_modules",
+      ".cache",
+      "@puppeteer",
+      "browsers",
+      "chrome",
+      "linux64-123456",
+      "chrome-linux64",
+      "chrome"
+    ),
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
