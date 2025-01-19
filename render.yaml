@@ -10,7 +10,7 @@ services:
     plan: free
     region: virginia
 
-  - type: worker
+  - type: web
     name: scraper-worker
     runtime: node
     buildCommand: npm install
