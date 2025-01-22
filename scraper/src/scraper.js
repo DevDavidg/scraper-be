@@ -1,13 +1,11 @@
 import axios from "axios";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import fs from "fs";
-import path, { dirname } from "path";
 import pLimit from "p-limit";
-import { fileURLToPath } from "url";
 import WebSocket from "ws";
 import { addExtra } from "puppeteer-extra";
+// import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
-
+// const puppeteerExtra = addExtra(puppeteer); si estoy en local
 const puppeteerExtra = addExtra(puppeteerCore);
 puppeteerExtra.use(StealthPlugin());
 
@@ -49,25 +47,38 @@ let addedCount = 0;
 let removedCount = 0;
 let existingCount = 0;
 
-const removeDuplicates = (data) => {
-  const uniqueDataMap = new Map();
-  data.forEach((item) => {
-    if (!uniqueDataMap.has(item.href)) {
-      uniqueDataMap.set(item.href, item);
+const fetchWithRetry = async (url, options = {}, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await axios(url, options);
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error en la solicitud (${i + 1}/${retries}):`,
+        error.message
+      );
+      if (i === retries - 1) {
+        console.error("Se agotaron los reintentos. Pasando al enfriamiento.");
+        throw new Error("API no disponible después de múltiples intentos.");
+      }
+      await delay(2000);
     }
-  });
-  return Array.from(uniqueDataMap.values());
+  }
 };
 
 const fetchCurrentAPIData = async () => {
   try {
-    const response = await axios.get(
-      "https://scraper-backend-pvvo.onrender.com/api/data"
+    const data = await fetchWithRetry(
+      "https://scraper-backend-pvvo.onrender.com/api/data",
+      { method: "GET" }
     );
-    console.log("Datos obtenidos de la API:", response.data);
-    return Array.isArray(response.data) ? response.data : [];
+    console.log("Datos obtenidos de la API:", data);
+    return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.error("Error obteniendo datos de la API:", error.message);
+    console.error(
+      "Error obteniendo datos de la API después de reintentos:",
+      error.message
+    );
     return [];
   }
 };
@@ -83,9 +94,6 @@ const sendDataToAPI = async (data) => {
     console.error("Error enviando datos a la API:", error.message);
   }
 };
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const autoScroll = async (page) => {
   await page.evaluate(async () => {
@@ -107,41 +115,43 @@ const autoScroll = async (page) => {
   });
 };
 
+const cooldown = async () => {
+  const randomCooldown =
+    Math.floor(Math.random() * (4 * 60 * 60 * 1000 - 2 * 60 * 60 * 1000)) +
+    2 * 60 * 60 * 1000;
+  const startTime = Date.now();
+  const endTime = startTime + randomCooldown;
+
+  console.log(
+    `Iniciando enfriamiento por ${Math.round(
+      randomCooldown / 1000 / 60
+    )} minutos...`
+  );
+
+  while (Date.now() < endTime) {
+    console.log("Enfriamiento...");
+    await delay(40000);
+  }
+
+  console.log("Enfriamiento finalizado. Reiniciando ejecución...");
+  process.exit(0);
+};
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 (async () => {
   const browser = await puppeteerExtra.launch({
     headless: true,
-    executablePath: "/usr/bin/chromium",
+    executablePath: "/usr/bin/chromium", // quitar si estoy en local
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const listingPage = await browser.newPage();
 
-  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
   const baseUrl = "https://www.zonaprop.com.ar";
-  const allScrapedData = [];
   const currentAPIData = await fetchCurrentAPIData();
-  const currentAPIHrefs = new Set(currentAPIData.map((item) => item.href));
-  const scrapedHrefs = new Set();
+  const scrapedHrefs = new Set(currentAPIData.map((item) => item.href));
 
-  const limit = pLimit(1);
-
-  const outputPath = path.resolve(__dirname, "../../../scraped_data.json");
-
-  if (fs.existsSync(outputPath)) {
-    try {
-      const rawData = fs.readFileSync(outputPath, "utf-8");
-      const existingData = JSON.parse(rawData);
-      const dedupedExistingData = removeDuplicates(existingData);
-      dedupedExistingData.forEach((item) => scrapedHrefs.add(item.href));
-      allScrapedData.push(...dedupedExistingData);
-      console.log(
-        `Cargados ${dedupedExistingData.length} datos existentes y eliminados duplicados.`
-      );
-    } catch (err) {
-      console.error("Error al leer o parsear scraped_data.json:", err);
-    }
-  }
+  const limit = pLimit(2);
 
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
@@ -161,7 +171,7 @@ const autoScroll = async (page) => {
         console.log(`Intentando navegar a ${link}, intento ${i + 1}`);
         await page.goto(link, {
           waitUntil: "networkidle2",
-          timeout: 30000,
+          timeout: 50000,
         });
         return true;
       } catch (error) {
@@ -234,7 +244,7 @@ const autoScroll = async (page) => {
           document.querySelectorAll("#user-views p")
         ).find((p) => p.textContent?.includes("visualizaciones"));
         const views = viewsElement
-          ? (viewsElement.textContent?.match(/\d+/) || [""])[0]
+          ? (/\d+/.exec(viewsElement.textContent) || [""])[0]
           : "";
 
         const images = [];
@@ -289,7 +299,7 @@ const autoScroll = async (page) => {
       try {
         await listingPage.goto(url, {
           waitUntil: "networkidle2",
-          timeout: 30000,
+          timeout: 50000,
         });
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
@@ -325,7 +335,7 @@ const autoScroll = async (page) => {
       }
 
       const newProperties = propertyLinks.filter(
-        (link) => !scrapedHrefs.has(link) && !currentAPIHrefs.has(link)
+        (link) => !scrapedHrefs.has(link)
       );
 
       if (newProperties.length === 0) {
@@ -377,10 +387,12 @@ const autoScroll = async (page) => {
   }
 
   await scrapeOnce();
+
   console.log("\nResumen de la ejecución:");
   console.log(`Propiedades agregadas: ${addedCount}`);
   console.log(`Propiedades eliminadas: ${removedCount}`);
   console.log(`Propiedades existentes: ${existingCount}`);
 
   await browser.close();
+  await cooldown();
 })();
