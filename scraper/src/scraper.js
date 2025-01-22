@@ -151,7 +151,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const currentAPIData = await fetchCurrentAPIData();
   const scrapedHrefs = new Set(currentAPIData.map((item) => item.href));
 
-  const limit = pLimit(2);
+  const limit = pLimit(1);
 
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
