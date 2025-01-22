@@ -145,9 +145,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--disable-gpu",
-      "--disable-dev-shm-usage",
-      "--disable-web-security",
+      "--proxy-server=http://scraperapi:ef0333d0b06aa626d1b467a7244472c8@proxy-server.scraperapi.com:8001",
     ],
   });
 
@@ -313,6 +311,8 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
           waitUntil: "networkidle2",
           timeout: 50000,
         });
+        const content = await listingPage.content();
+        console.log("Contenido HTML cargado:", content);
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
         break;
