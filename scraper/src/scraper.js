@@ -3,10 +3,10 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import pLimit from "p-limit";
 import WebSocket from "ws";
 import { addExtra } from "puppeteer-extra";
-// import puppeteer from "puppeteer";
-import puppeteerCore from "puppeteer-core";
-// const puppeteerExtra = addExtra(puppeteer); si estoy en local
-const puppeteerExtra = addExtra(puppeteerCore);
+import puppeteer from "puppeteer";
+// import puppeteerCore from "puppeteer-core";
+const puppeteerExtra = addExtra(puppeteer);
+// const puppeteerExtra = addExtra(puppeteerCore);
 puppeteerExtra.use(StealthPlugin());
 
 import http from "http";
@@ -140,12 +140,14 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 (async () => {
   const browser = await puppeteerExtra.launch({
-    headless: true,
-    executablePath: "/usr/bin/chromium",
+    headless: false,
+    // executablePath: "/usr/bin/chromium",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--proxy-server=http://scraperapi:ef0333d0b06aa626d1b467a7244472c8@proxy-server.scraperapi.com:8001",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-web-security",
     ],
   });
 
@@ -156,12 +158,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const scrapedHrefs = new Set(currentAPIData.map((item) => item.href));
 
   const limit = pLimit(1);
-  await listingPage.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-  );
-  await listingPage.setExtraHTTPHeaders({
-    "Accept-Language": "en-US,en;q=0.9",
-  });
+
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
     const resourceType = request.resourceType();
@@ -298,7 +295,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   };
 
   const scrapeOnce = async () => {
-    let currentPage = 2;
+    let currentPage = 1;
     let previousPages = new Set();
     let consecutiveMatches = 0;
 
@@ -311,8 +308,6 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
           waitUntil: "networkidle2",
           timeout: 50000,
         });
-        const content = await listingPage.content();
-        console.log("Contenido HTML cargado:", content);
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
         break;
