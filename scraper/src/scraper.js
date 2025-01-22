@@ -158,7 +158,12 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const scrapedHrefs = new Set(currentAPIData.map((item) => item.href));
 
   const limit = pLimit(1);
-
+  await listingPage.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+  );
+  await listingPage.setExtraHTTPHeaders({
+    "Accept-Language": "en-US,en;q=0.9",
+  });
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
     const resourceType = request.resourceType();
@@ -295,7 +300,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   };
 
   const scrapeOnce = async () => {
-    let currentPage = 1;
+    let currentPage = 2;
     let previousPages = new Set();
     let consecutiveMatches = 0;
 
