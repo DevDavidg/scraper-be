@@ -141,8 +141,14 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 (async () => {
   const browser = await puppeteerExtra.launch({
     headless: true,
-    executablePath: "/usr/bin/chromium", // quitar si estoy en local
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath: "/usr/bin/chromium",
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-web-security",
+    ],
   });
 
   const listingPage = await browser.newPage();
@@ -164,6 +170,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       request.continue();
     }
   });
+  console.log(await listingPage.content());
 
   const retryNavigation = async (page, link, retries = 3) => {
     for (let i = 0; i < retries; i++) {
