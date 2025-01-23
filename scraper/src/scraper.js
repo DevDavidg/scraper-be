@@ -147,6 +147,14 @@ const cooldown = async () => {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 await delay(3000 + Math.random() * 2000);
 
+const randomDelay = async () => {
+  const randomMs = Math.floor(Math.random() * (10000 - 5000 + 1)) + 5000; // Entre 5000ms y 10000ms
+  console.log(
+    `Esperando ${randomMs / 1000} segundos antes de la siguiente solicitud...`
+  );
+  await delay(randomMs);
+};
+
 (async () => {
   const browser = await puppeteerExtra.launch({
     headless: "new",
@@ -312,6 +320,7 @@ await delay(3000 + Math.random() * 2000);
     } finally {
       await detailPage.close();
     }
+    await randomDelay();
   };
 
   const scrapeOnce = async () => {
@@ -328,6 +337,7 @@ await delay(3000 + Math.random() * 2000);
           waitUntil: "networkidle2",
           timeout: 100000,
         });
+        await randomDelay();
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
         break;
