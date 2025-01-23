@@ -236,7 +236,7 @@ await delay(3000 + Math.random() * 2000);
 
       await autoScroll(detailPage);
 
-      await delay(200);
+      await delay(2000);
 
       const dataFromDetail = await detailPage.evaluate(() => {
         const extractText = (selector, regex) => {
