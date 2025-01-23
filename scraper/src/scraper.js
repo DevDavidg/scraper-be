@@ -173,7 +173,57 @@ const randomDelay = async () => {
   });
 
   const listingPage = await browser.newPage();
-  const cookies = JSON.parse(fs.readFileSync("./cookies.json", "utf-8"));
+  const cookies = JSON.parse(
+    [
+      {
+        name: "ACCOUNT_CHOOSER",
+        value:
+          "AFx_qI6TfHTEhYIC5cFWrs5lN58dGqT3PUjRc7oj9U4l4gUlnk6A7p-qe0TD-g0FpOt_6bu9g9XsFDTaWL6Es5T8dHQ8NkOhe5CtqOijtEapk-4tOYoNeMdo-iP-3Iw0NeHhPjlepZJErXVaGRvKpTdK8veq8ibWXfGuS4DJTILLeBN2aa_k3G1VGX64KStCFq64IBcl6J6DeHh_mWwTqypCwE8ED82qtFHQ9-CnuOZNB85VoxKATEQxmQOK0nWoTMTtosVDxMadVv5sUJFnMFgqo7IJz5SASkHPQFUirnXEILSSbFtBzeqAf6htuSWqixc1QTWlQMTm8srj6gmMucDmHIpmratZSpUY0-ZzVtw2lR55EOi3f1MI_sLLygKIMxInQTZsF40i",
+        domain: "accounts.google.com",
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+      },
+      {
+        name: "ADS_VISITOR_ID",
+        value: "00000000-0000-0000-0000-000000000000",
+        domain: ".google.com",
+        path: "/",
+        httpOnly: true,
+        secure: true,
+      },
+      {
+        name: "AEC",
+        value: "AZ6Zc-VQKIbDjn82-FFdiBBNnubuoi7Jlqu30mOuB5NFS1xo3Vz0V7Q-qeE",
+        domain: ".google.com",
+        path: "/",
+        httpOnly: false,
+        secure: true,
+        sameSite: "Lax",
+      },
+      {
+        name: "DSID",
+        value:
+          "ACZUy1zGWnjw8Z6XBj6SZPUJLMMA6cTdQQDrFcPrH14jApOxQALxjLCzEeXJchCpoaTz2X9i2T2m-Ke6K82-ebbtjDtPcj6Sug83Em2uhugKwYedRTyt5e_vNiihpV91SosYjqnzSrU8JRkFFTuHkt7lfNKebm92L14-WXH3gB_5HQ6m33oaTBApdSeJJMCuKA1EXVJhZb6qiUd9qohTBQZxo1pmS_WguffFEYDfnanR1OgMvpRAYsXeO2sbfNRfOCNX6-WyTiMVKNSjYs4jNXiwykiSNZpyfFV0H1XlMCYOlFI3EvAJxbA",
+        domain: ".doubleclick.net",
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      },
+      {
+        name: "HSID",
+        value: "AvFG2RXh7z6ezE7r3",
+        domain: ".google.com",
+        path: "/",
+        httpOnly: true,
+        secure: true,
+      },
+    ],
+    "utf-8"
+  );
+
   await listingPage.setCookie(...cookies);
 
   const baseUrl = "https://www.zonaprop.com.ar";
