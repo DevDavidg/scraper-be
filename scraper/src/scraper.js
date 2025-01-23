@@ -6,10 +6,11 @@ import { addExtra } from "puppeteer-extra";
 // import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
 // const puppeteerExtra = addExtra(puppeteer);
-const puppeteerExtra = addExtra(puppeteerCore);
-puppeteerExtra.use(StealthPlugin());
-
 import http from "http";
+
+const puppeteerExtra = addExtra(puppeteerCore);
+
+puppeteerExtra.use(StealthPlugin({ options: { useChallengeResponse: true } }));
 
 const port = process.env.PORT || 3000;
 
@@ -161,6 +162,10 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const scrapedHrefs = new Set(currentAPIData.map((item) => item.href));
 
   const limit = pLimit(1);
+
+  await listingPage.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+  );
 
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
