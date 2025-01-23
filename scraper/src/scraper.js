@@ -20,8 +20,6 @@ stealthPlugin.enabledEvasions.delete("navigator.languages");
 puppeteerExtra.use(stealthPlugin);
 
 const port = process.env.PORT || 3000;
-const cookies = await page.cookies();
-fs.writeFileSync("cookies.json", JSON.stringify(cookies));
 
 http
   .createServer((_, res) => {
@@ -239,6 +237,8 @@ await delay(3000 + Math.random() * 2000);
       }
 
       await autoScroll(detailPage);
+      const cookies = await detailPage.cookies();
+      fs.writeFileSync("cookies.json", JSON.stringify(cookies));
       await delay(200);
 
       const dataFromDetail = await detailPage.evaluate(() => {
