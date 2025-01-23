@@ -10,7 +10,14 @@ import http from "http";
 
 const puppeteerExtra = addExtra(puppeteerCore);
 
-puppeteerExtra.use(StealthPlugin({ options: { useChallengeResponse: true } }));
+const stealthPlugin = StealthPlugin();
+
+// Opciones adicionales para evitar detección
+stealthPlugin.enabledEvasions.delete("iframe.contentWindow");
+stealthPlugin.enabledEvasions.delete("navigator.plugins");
+stealthPlugin.enabledEvasions.delete("navigator.languages");
+
+puppeteerExtra.use(stealthPlugin);
 
 const port = process.env.PORT || 3000;
 
