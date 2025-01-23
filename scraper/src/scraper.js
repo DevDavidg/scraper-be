@@ -174,9 +174,9 @@ await delay(3000 + Math.random() * 2000);
   await listingPage.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
   );
-  await listingPage.setViewport({ width: 1920, height: 1080 });
   await listingPage.setExtraHTTPHeaders({
     "Accept-Language": "en-US,en;q=0.9",
+    "Upgrade-Insecure-Requests": "1",
   });
 
   await listingPage.setRequestInterception(true);
