@@ -20,6 +20,8 @@ stealthPlugin.enabledEvasions.delete("navigator.languages");
 puppeteerExtra.use(stealthPlugin);
 
 const port = process.env.PORT || 3000;
+const cookies = await page.cookies();
+fs.writeFileSync("cookies.json", JSON.stringify(cookies));
 
 http
   .createServer((_, res) => {
@@ -145,6 +147,7 @@ const cooldown = async () => {
   process.exit(0);
 };
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+await delay(3000 + Math.random() * 2000);
 
 (async () => {
   const browser = await puppeteerExtra.launch({
@@ -173,6 +176,12 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   await listingPage.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
   );
+  const cookies = JSON.parse(fs.readFileSync("cookies.json", "utf8"));
+  await listingPage.setCookie(...cookies);
+  await listingPage.setViewport({ width: 1920, height: 1080 });
+  await listingPage.setExtraHTTPHeaders({
+    "Accept-Language": "en-US,en;q=0.9",
+  });
 
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
