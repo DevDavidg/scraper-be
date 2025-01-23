@@ -7,6 +7,7 @@ import { addExtra } from "puppeteer-extra";
 import puppeteerCore from "puppeteer-core";
 // const puppeteerExtra = addExtra(puppeteer);
 import http from "http";
+import fs from "fs";
 
 const puppeteerExtra = addExtra(puppeteerCore);
 
@@ -108,7 +109,7 @@ const autoScroll = async (page) => {
     await new Promise((resolve) => {
       let totalHeight = 0;
       const distance = 100;
-      const delay = 100;
+      const delay = Math.floor(Math.random() * (7000 - 2000 + 1)) + 2000;
       const timer = setInterval(() => {
         const { scrollHeight } = document.body;
         window.scrollBy(0, distance);
@@ -172,16 +173,8 @@ const randomDelay = async () => {
   });
 
   const listingPage = await browser.newPage();
-  await listingPage.setCookie({
-    name: "ACCOUNT_CHOOSER",
-    value:
-      "AFx_qI6TfHTEhYIC5cFWrs5lN58dGqT3PUjRc7oj9U4l4gUlnk6A7p-qe0TD-g0FpOt_6bu9g9XsFDTaWL6Es5T8dHQ8NkOhe5CtqOijtEapk-4tOYoNeMdo-iP-3Iw0NeHhPjlepZJErXVaGRvKpTdK8veq8ibWXfGuS4DJTILLeBN2aa_k3G1VGX64KStCFq64IBcl6J6DeHh_mWwTqypCwE8ED82qtFHQ9-CnuOZNB85VoxKATEQxmQOK0nWoTMTtosVDxMadVv5sUJFnMFgqo7IJz5SASkHPQFUirnXEILSSbFtBzeqAf6htuSWqixc1QTWlQMTm8srj6gmMucDmHIpmratZSpUY0-ZzVtw2lR55EOi3f1MI_sLLygKIMxInQTZsF40i",
-    domain: ".zonaprop.com.ar",
-    path: "/",
-    httpOnly: false,
-    secure: true,
-    sameSite: "Lax",
-  });
+  const cookies = JSON.parse(fs.readFileSync("cookies.json", "utf-8"));
+  await listingPage.setCookie(...cookies);
 
   const baseUrl = "https://www.zonaprop.com.ar";
   const currentAPIData = await fetchCurrentAPIData();
@@ -257,68 +250,98 @@ const randomDelay = async () => {
       await delay(2000);
 
       const dataFromDetail = await detailPage.evaluate(() => {
-        const extractText = (selector, regex) => {
-          const element = document.querySelector(selector);
-          if (!element?.textContent) return "";
-          let text = element.textContent.replace(/\s+/g, " ").trim();
-          if (regex) {
-            const match = regex.exec(text);
-            return match ? match[0] : "";
-          }
-          return text;
-        };
+        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const randomDelay =
+          Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000;
 
-        const price = extractText(".price-value", /(?:\$|USD)\s?[\d.,]+/i);
-        const expenses = extractText(
-          ".price-expenses",
-          /(?:Expensas\s*\$?\s?[\d.,]+)/i
-        );
-        const location = extractText(
-          ".section-location-property.section-location-property-classified"
-        );
-        const titleTypeSupProperty = extractText(
-          ".title-type-sup-property",
-          /^.+$/
-        );
-        const daysPublishedElement = document.querySelector("#user-views p");
-        const daysPublished = daysPublishedElement
-          ? daysPublishedElement.textContent?.trim() || ""
-          : "";
-
-        const viewsElement = Array.from(
-          document.querySelectorAll("#user-views p")
-        ).find((p) => p.textContent?.includes("visualizaciones"));
-        const views = viewsElement
-          ? (/\d+/.exec(viewsElement.textContent) || [""])[0]
-          : "";
-
-        const images = [];
-        const multimediaContent = document.querySelector("#multimedia-content");
-        if (multimediaContent) {
-          multimediaContent.querySelectorAll("img").forEach((img) => {
-            const src =
-              img.getAttribute("src") ||
-              img.getAttribute("data-flickity-lazyload");
-            if (src?.includes("zonapropcdn.com")) {
-              images.push(src);
+        return delay(randomDelay).then(() => {
+          const extractText = (selector, regex) => {
+            const element = document.querySelector(selector);
+            if (!element?.textContent) return "";
+            let text = element.textContent.replace(/\s+/g, " ").trim();
+            if (regex) {
+              const match = regex.exec(text);
+              return match ? match[0] : "";
             }
-          });
-        }
+            return text;
+          };
 
-        return {
-          price,
-          expenses,
-          location,
-          href: window.location.href,
-          images,
-          discount: "",
-          titleTypeSupProperty,
-          daysPublished,
-          views,
-        };
+          const price = extractText(".price-value", /(?:\$|USD)\s?[\d.,]+/i);
+          const expenses = extractText(
+            ".price-expenses",
+            /(?:Expensas\s*\$?\s?[\d.,]+)/i
+          );
+          const location = extractText(
+            ".section-location-property.section-location-property-classified"
+          );
+          const titleTypeSupProperty = extractText(
+            ".title-type-sup-property",
+            /^.+$/
+          );
+          const daysPublishedElement = document.querySelector("#user-views p");
+          const daysPublished = daysPublishedElement
+            ? daysPublishedElement.textContent?.trim() || ""
+            : "";
+
+          const viewsElement = Array.from(
+            document.querySelectorAll("#user-views p")
+          ).find((p) => p.textContent?.includes("visualizaciones"));
+          const views = viewsElement
+            ? (/\d+/.exec(viewsElement.textContent) || [""])[0]
+            : "";
+
+          const images = [];
+          const multimediaContent = document.querySelector(
+            "#multimedia-content"
+          );
+          if (multimediaContent) {
+            multimediaContent.querySelectorAll("img").forEach((img) => {
+              const src =
+                img.getAttribute("src") ||
+                img.getAttribute("data-flickity-lazyload");
+              if (src?.includes("zonapropcdn.com")) {
+                images.push(src);
+              }
+            });
+          }
+
+          return {
+            price,
+            expenses,
+            location,
+            href: window.location.href,
+            images,
+            discount: "",
+            titleTypeSupProperty,
+            daysPublished,
+            views,
+          };
+        });
       });
 
-      await sendDataToAPI(dataFromDetail);
+      const {
+        price,
+        expenses,
+        location,
+        images,
+        titleTypeSupProperty,
+        daysPublished,
+        views,
+      } = dataFromDetail;
+
+      if (
+        !price &&
+        !expenses &&
+        !location &&
+        !images.length &&
+        !titleTypeSupProperty &&
+        !daysPublished &&
+        !views
+      ) {
+        console.log("Datos vacíos");
+      } else {
+        await sendDataToAPI(dataFromDetail);
+      }
       addedCount++;
       console.log("Datos extraídos y enviados:", dataFromDetail);
 
