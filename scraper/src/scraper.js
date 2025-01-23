@@ -197,7 +197,7 @@ await delay(3000 + Math.random() * 2000);
         console.log(`Intentando navegar a ${link}, intento ${i + 1}`);
         await page.goto(link, {
           waitUntil: "networkidle2",
-          timeout: 50000,
+          timeout: 100000,
         });
         return true;
       } catch (error) {
@@ -326,7 +326,7 @@ await delay(3000 + Math.random() * 2000);
       try {
         await listingPage.goto(url, {
           waitUntil: "networkidle2",
-          timeout: 50000,
+          timeout: 100000,
         });
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
