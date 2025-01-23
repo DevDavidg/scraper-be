@@ -3,10 +3,10 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import pLimit from "p-limit";
 import WebSocket from "ws";
 import { addExtra } from "puppeteer-extra";
-import puppeteer from "puppeteer";
-// import puppeteerCore from "puppeteer-core";
-const puppeteerExtra = addExtra(puppeteer);
-// const puppeteerExtra = addExtra(puppeteerCore);
+// import puppeteer from "puppeteer";
+import puppeteerCore from "puppeteer-core";
+// const puppeteerExtra = addExtra(puppeteer);
+const puppeteerExtra = addExtra(puppeteerCore);
 puppeteerExtra.use(StealthPlugin());
 
 import http from "http";
@@ -140,14 +140,17 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 (async () => {
   const browser = await puppeteerExtra.launch({
-    headless: false,
-    // executablePath: "/usr/bin/chromium",
+    headless: "new",
+    executablePath: "/usr/bin/chromium",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--disable-gpu",
       "--disable-dev-shm-usage",
       "--disable-web-security",
+      "--disable-background-timer-throttling",
+      "--disable-renderer-backgrounding",
+      "--disable-gpu",
+      "--disable-software-rasterizer",
     ],
   });
 
@@ -170,7 +173,6 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       request.continue();
     }
   });
-  console.log(await listingPage.content());
 
   const retryNavigation = async (page, link, retries = 3) => {
     for (let i = 0; i < retries; i++) {
@@ -329,6 +331,8 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
         });
         return links;
       }, baseUrl);
+
+      console.log(await listingPage.content());
 
       console.log(
         `Propiedades encontradas en la página ${currentPage}: ${propertyLinks.length}`
