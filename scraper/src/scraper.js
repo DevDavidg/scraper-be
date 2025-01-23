@@ -173,7 +173,7 @@ const randomDelay = async () => {
   });
 
   const listingPage = await browser.newPage();
-  const cookies = JSON.parse(fs.readFileSync("cookies.json", "utf-8"));
+  const cookies = JSON.parse(fs.readFileSync("./cookies.json", "utf-8"));
   await listingPage.setCookie(...cookies);
 
   const baseUrl = "https://www.zonaprop.com.ar";
