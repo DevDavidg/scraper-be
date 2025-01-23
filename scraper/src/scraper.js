@@ -172,6 +172,16 @@ const randomDelay = async () => {
   });
 
   const listingPage = await browser.newPage();
+  await listingPage.setCookie({
+    name: "ACCOUNT_CHOOSER",
+    value:
+      "AFx_qI6TfHTEhYIC5cFWrs5lN58dGqT3PUjRc7oj9U4l4gUlnk6A7p-qe0TD-g0FpOt_6bu9g9XsFDTaWL6Es5T8dHQ8NkOhe5CtqOijtEapk-4tOYoNeMdo-iP-3Iw0NeHhPjlepZJErXVaGRvKpTdK8veq8ibWXfGuS4DJTILLeBN2aa_k3G1VGX64KStCFq64IBcl6J6DeHh_mWwTqypCwE8ED82qtFHQ9-CnuOZNB85VoxKATEQxmQOK0nWoTMTtosVDxMadVv5sUJFnMFgqo7IJz5SASkHPQFUirnXEILSSbFtBzeqAf6htuSWqixc1QTWlQMTm8srj6gmMucDmHIpmratZSpUY0-ZzVtw2lR55EOi3f1MI_sLLygKIMxInQTZsF40i",
+    domain: ".zonaprop.com.ar",
+    path: "/",
+    httpOnly: false,
+    secure: true,
+    sameSite: "Lax",
+  });
 
   const baseUrl = "https://www.zonaprop.com.ar";
   const currentAPIData = await fetchCurrentAPIData();
