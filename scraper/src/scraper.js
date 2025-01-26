@@ -3,22 +3,11 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import pLimit from "p-limit";
 import WebSocket from "ws";
 import { addExtra } from "puppeteer-extra";
-// import puppeteer from "puppeteer";
-import puppeteerCore from "puppeteer-core";
-// const puppeteerExtra = addExtra(puppeteer);
+import puppeteer from "puppeteer";
+const puppeteerExtra = addExtra(puppeteer);
+puppeteerExtra.use(StealthPlugin());
+
 import http from "http";
-import fs from "fs";
-
-const puppeteerExtra = addExtra(puppeteerCore);
-
-const stealthPlugin = StealthPlugin();
-
-// Opciones adicionales para evitar detección
-stealthPlugin.enabledEvasions.delete("iframe.contentWindow");
-stealthPlugin.enabledEvasions.delete("navigator.plugins");
-stealthPlugin.enabledEvasions.delete("navigator.languages");
-
-puppeteerExtra.use(stealthPlugin);
 
 const port = process.env.PORT || 3000;
 
@@ -75,6 +64,20 @@ const fetchWithRetry = async (url, options = {}, retries = 3) => {
   }
 };
 
+const removeDuplicates = (data) => {
+  const uniqueData = [];
+  const seenHrefs = new Set();
+
+  data.forEach((item) => {
+    if (!seenHrefs.has(item.href)) {
+      uniqueData.push(item);
+      seenHrefs.add(item.href);
+    }
+  });
+
+  return uniqueData;
+};
+
 const fetchCurrentAPIData = async () => {
   try {
     const data = await fetchWithRetry(
@@ -82,7 +85,10 @@ const fetchCurrentAPIData = async () => {
       { method: "GET" }
     );
     console.log("Datos obtenidos de la API:", data);
-    return Array.isArray(data) ? data : [];
+
+    const filteredData = removeDuplicates(Array.isArray(data) ? data : []);
+    console.log("Datos después de eliminar duplicados:", filteredData);
+    return filteredData;
   } catch (error) {
     console.error(
       "Error obteniendo datos de la API después de reintentos:",
@@ -109,7 +115,7 @@ const autoScroll = async (page) => {
     await new Promise((resolve) => {
       let totalHeight = 0;
       const distance = 100;
-      const delay = Math.floor(Math.random() * (7000 - 2000 + 1)) + 2000;
+      const delay = 100;
       const timer = setInterval(() => {
         const { scrollHeight } = document.body;
         window.scrollBy(0, distance);
@@ -146,99 +152,20 @@ const cooldown = async () => {
   process.exit(0);
 };
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-await delay(3000 + Math.random() * 2000);
-
-const randomDelay = async () => {
-  const randomMs = Math.floor(Math.random() * (10000 - 5000 + 1)) + 5000; // Entre 5000ms y 10000ms
-  console.log(
-    `Esperando ${randomMs / 1000} segundos antes de la siguiente solicitud...`
-  );
-  await delay(randomMs);
-};
 
 (async () => {
   const browser = await puppeteerExtra.launch({
-    headless: "new",
-    executablePath: "/usr/bin/chromium",
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-web-security",
-      "--disable-background-timer-throttling",
-      "--disable-renderer-backgrounding",
-      "--disable-gpu",
-      "--disable-software-rasterizer",
-    ],
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   const listingPage = await browser.newPage();
-  const cookies = JSON.parse(
-    [
-      {
-        name: "ACCOUNT_CHOOSER",
-        value:
-          "AFx_qI6TfHTEhYIC5cFWrs5lN58dGqT3PUjRc7oj9U4l4gUlnk6A7p-qe0TD-g0FpOt_6bu9g9XsFDTaWL6Es5T8dHQ8NkOhe5CtqOijtEapk-4tOYoNeMdo-iP-3Iw0NeHhPjlepZJErXVaGRvKpTdK8veq8ibWXfGuS4DJTILLeBN2aa_k3G1VGX64KStCFq64IBcl6J6DeHh_mWwTqypCwE8ED82qtFHQ9-CnuOZNB85VoxKATEQxmQOK0nWoTMTtosVDxMadVv5sUJFnMFgqo7IJz5SASkHPQFUirnXEILSSbFtBzeqAf6htuSWqixc1QTWlQMTm8srj6gmMucDmHIpmratZSpUY0-ZzVtw2lR55EOi3f1MI_sLLygKIMxInQTZsF40i",
-        domain: "accounts.google.com",
-        path: "/",
-        httpOnly: true,
-        secure: true,
-        sameSite: "Lax",
-      },
-      {
-        name: "ADS_VISITOR_ID",
-        value: "00000000-0000-0000-0000-000000000000",
-        domain: ".google.com",
-        path: "/",
-        httpOnly: true,
-        secure: true,
-      },
-      {
-        name: "AEC",
-        value: "AZ6Zc-VQKIbDjn82-FFdiBBNnubuoi7Jlqu30mOuB5NFS1xo3Vz0V7Q-qeE",
-        domain: ".google.com",
-        path: "/",
-        httpOnly: false,
-        secure: true,
-        sameSite: "Lax",
-      },
-      {
-        name: "DSID",
-        value:
-          "ACZUy1zGWnjw8Z6XBj6SZPUJLMMA6cTdQQDrFcPrH14jApOxQALxjLCzEeXJchCpoaTz2X9i2T2m-Ke6K82-ebbtjDtPcj6Sug83Em2uhugKwYedRTyt5e_vNiihpV91SosYjqnzSrU8JRkFFTuHkt7lfNKebm92L14-WXH3gB_5HQ6m33oaTBApdSeJJMCuKA1EXVJhZb6qiUd9qohTBQZxo1pmS_WguffFEYDfnanR1OgMvpRAYsXeO2sbfNRfOCNX6-WyTiMVKNSjYs4jNXiwykiSNZpyfFV0H1XlMCYOlFI3EvAJxbA",
-        domain: ".doubleclick.net",
-        path: "/",
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-      },
-      {
-        name: "HSID",
-        value: "AvFG2RXh7z6ezE7r3",
-        domain: ".google.com",
-        path: "/",
-        httpOnly: true,
-        secure: true,
-      },
-    ],
-    "utf-8"
-  );
-
-  await listingPage.setCookie(...cookies);
 
   const baseUrl = "https://www.zonaprop.com.ar";
   const currentAPIData = await fetchCurrentAPIData();
   const scrapedHrefs = new Set(currentAPIData.map((item) => item.href));
 
-  const limit = pLimit(1);
-
-  await listingPage.setUserAgent(
-    "Mozilla/5.0 (Windows NT 5.1; rv:5.0) Gecko/20100101 Firefox/5.0"
-  );
-  await listingPage.setExtraHTTPHeaders({
-    "Accept-Language": "en-US,en;q=0.9",
-    "Upgrade-Insecure-Requests": "1",
-  });
+  const limit = pLimit(25);
 
   await listingPage.setRequestInterception(true);
   listingPage.on("request", (request) => {
@@ -258,7 +185,7 @@ const randomDelay = async () => {
         console.log(`Intentando navegar a ${link}, intento ${i + 1}`);
         await page.goto(link, {
           waitUntil: "networkidle2",
-          timeout: 100000,
+          timeout: 50000,
         });
         return true;
       } catch (error) {
@@ -296,102 +223,71 @@ const randomDelay = async () => {
       }
 
       await autoScroll(detailPage);
-
-      await delay(2000);
+      await delay(200);
 
       const dataFromDetail = await detailPage.evaluate(() => {
-        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-        const randomDelay =
-          Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000;
-
-        return delay(randomDelay).then(() => {
-          const extractText = (selector, regex) => {
-            const element = document.querySelector(selector);
-            if (!element?.textContent) return "";
-            let text = element.textContent.replace(/\s+/g, " ").trim();
-            if (regex) {
-              const match = regex.exec(text);
-              return match ? match[0] : "";
-            }
-            return text;
-          };
-
-          const price = extractText(".price-value", /(?:\$|USD)\s?[\d.,]+/i);
-          const expenses = extractText(
-            ".price-expenses",
-            /(?:Expensas\s*\$?\s?[\d.,]+)/i
-          );
-          const location = extractText(
-            ".section-location-property.section-location-property-classified"
-          );
-          const titleTypeSupProperty = extractText(
-            ".title-type-sup-property",
-            /^.+$/
-          );
-          const daysPublishedElement = document.querySelector("#user-views p");
-          const daysPublished = daysPublishedElement
-            ? daysPublishedElement.textContent?.trim() || ""
-            : "";
-
-          const viewsElement = Array.from(
-            document.querySelectorAll("#user-views p")
-          ).find((p) => p.textContent?.includes("visualizaciones"));
-          const views = viewsElement
-            ? (/\d+/.exec(viewsElement.textContent) || [""])[0]
-            : "";
-
-          const images = [];
-          const multimediaContent = document.querySelector(
-            "#multimedia-content"
-          );
-          if (multimediaContent) {
-            multimediaContent.querySelectorAll("img").forEach((img) => {
-              const src =
-                img.getAttribute("src") ||
-                img.getAttribute("data-flickity-lazyload");
-              if (src?.includes("zonapropcdn.com")) {
-                images.push(src);
-              }
-            });
+        const extractText = (selector, regex) => {
+          const element = document.querySelector(selector);
+          if (!element?.textContent) return "";
+          let text = element.textContent.replace(/\s+/g, " ").trim();
+          if (regex) {
+            const match = regex.exec(text);
+            return match ? match[0] : "";
           }
+          return text;
+        };
 
-          return {
-            price,
-            expenses,
-            location,
-            href: window.location.href,
-            images,
-            discount: "",
-            titleTypeSupProperty,
-            daysPublished,
-            views,
-          };
-        });
+        const price = extractText(".price-value", /(?:\$|USD)\s?[\d.,]+/i);
+        const expenses = extractText(
+          ".price-expenses",
+          /(?:Expensas\s*\$?\s?[\d.,]+)/i
+        );
+        const location = extractText(
+          ".section-location-property.section-location-property-classified"
+        );
+        const titleTypeSupProperty = extractText(
+          ".title-type-sup-property",
+          /^.+$/
+        );
+        const daysPublishedElement = document.querySelector("#user-views p");
+        const daysPublished = daysPublishedElement
+          ? daysPublishedElement.textContent?.trim() || ""
+          : "";
+
+        const viewsElement = Array.from(
+          document.querySelectorAll("#user-views p")
+        ).find((p) => p.textContent?.includes("visualizaciones"));
+        const views = viewsElement
+          ? (/\d+/.exec(viewsElement.textContent) || [""])[0]
+          : "";
+
+        const images = [];
+        const multimediaContent = document.querySelector("#multimedia-content");
+        if (multimediaContent) {
+          multimediaContent.querySelectorAll("img").forEach((img) => {
+            const src =
+              img.getAttribute("src") ||
+              img.getAttribute("data-flickity-lazyload");
+            if (src?.includes("zonapropcdn.com")) {
+              images.push(src);
+            }
+          });
+        }
+
+        return {
+          price,
+          expenses,
+          location,
+          href: window.location.href,
+          images,
+          discount: "",
+          titleTypeSupProperty,
+          daysPublished,
+          views,
+        };
       });
 
-      const {
-        price,
-        expenses,
-        location,
-        images,
-        titleTypeSupProperty,
-        daysPublished,
-        views,
-      } = dataFromDetail;
-
-      if (
-        !price &&
-        !expenses &&
-        !location &&
-        !images.length &&
-        !titleTypeSupProperty &&
-        !daysPublished &&
-        !views
-      ) {
-        console.log("Datos vacíos");
-      } else {
-        await sendDataToAPI(dataFromDetail);
-      }
+      await sendDataToAPI(dataFromDetail);
       addedCount++;
       console.log("Datos extraídos y enviados:", dataFromDetail);
 
@@ -403,7 +299,6 @@ const randomDelay = async () => {
     } finally {
       await detailPage.close();
     }
-    await randomDelay();
   };
 
   const scrapeOnce = async () => {
@@ -418,9 +313,8 @@ const randomDelay = async () => {
       try {
         await listingPage.goto(url, {
           waitUntil: "networkidle2",
-          timeout: 100000,
+          timeout: 50000,
         });
-        await randomDelay();
       } catch (err) {
         console.error(`Error al navegar a la página ${url}:`, err);
         break;
@@ -442,8 +336,6 @@ const randomDelay = async () => {
         });
         return links;
       }, baseUrl);
-
-      console.log(await listingPage.content());
 
       console.log(
         `Propiedades encontradas en la página ${currentPage}: ${propertyLinks.length}`
